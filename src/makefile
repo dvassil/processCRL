@@ -11,7 +11,7 @@ DEST    = crl
 GCC     = gcc -x c -O3 -Wall -s -foptimize-strlen
 
 all:
-	@$(GCC) $(INCLUDE) $(LIBDIR) $(LIBS) $(SOURCES) -o $(DEST)
+	@$(GCC) $(INCLUDE) $(LIBDIR) $(LIBS) $(SOURCES) -o ../out/$(DEST)
 
 clean:
 	rm *.o $(DEST)
