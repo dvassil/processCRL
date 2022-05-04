@@ -38,8 +38,6 @@ extern char* strptime(const char* __restrict __s, const char* __restrict __fmt, 
 
 #define access _access
 
-//#define INPUT_FILENAME "D:\\tmp\\private.crl.txt"
-
 extern char* strptime(const char* __restrict __s, const char* __restrict __fmt, struct tm* __tp);
 //extern char* strptime(const char* buf, const char* format, struct tm* tm);
 
@@ -59,9 +57,6 @@ extern char* strptime(const char* __restrict __s, const char* __restrict __fmt, 
 
 bool file_exists(char* filename);
 
-/*
-*/
-
 char line[MAX_LINE_LEN << 1] = "\0";
 char buffer[MAX_LINE_LEN] = "\0";
 
@@ -71,94 +66,57 @@ int main()
     int REVOCATION_DATE_LEN = (sizeof(REVOCATION_DATE) - 1);
 
     char* pch = NULL;
-    //char* in_filename = INPUT_FILENAME;
 
     long read = 0, written = 0;
-    //char* pch2 = NULL;
 
-    if (true /* file_exists(in_filename) */)
+    FILE* fin = NULL;
+    //fin = fopen(in_filename, "r");
+    fin = stdin;
+
+    read = 0;
+    bool isfirst = true;
+    //pch = fgets(buffer, MAX_LINE_LEN, fin);
+
+    while (!feof(fin) && (read < SKIP_LINES))
     {
-
-        FILE* fin = NULL;
-        //fin = fopen(in_filename, "r");
-        fin = stdin;
-        if (true /* fin */)
-        {
-            read = 0;
-            bool isfirst = true;
-            //pch = fgets(buffer, MAX_LINE_LEN, fin);
-
-            while (!feof(fin) && (read < SKIP_LINES))
-            {
-                read++;
-                pch = fgets(buffer, MAX_LINE_LEN, fin);
-            }
-
-            while (!feof(fin) && strstr(buffer, SIGNATURE_ALGORITHM)==NULL)
-            {
-                size_t linelen = strlen(pch);
-
-                if (isfirst)
-                {
-                    written++;
-                    WRITE(ltoa(written, line, 10));
-                    WRITE(",\"");
-                    pch[linelen - 1] = '\0';
-                    WRITE(pch + SERIAL_NUMBER_LEN);
-                    WRITE("\",");
-
-                    // pch[linelen - 1] = '\0';
-                    // sprintf(line, "%ld,\"%s\",", written, pch + SERIAL_NUMBER_LEN);
-                    // linelen = strlen(line);
-                    // pch2 = line + linelen;
-                    // printf("%ld,\"%s\",", written, pch + SERIAL_NUMBER_LEN);
-                    //pch2 = line;
-                }
-                else
-                {
-                    char* pch3;
-                    pch3 = pch + REVOCATION_DATE_LEN;
-                    //strncpy(pch2, pch3, linelen - REVOCATION_DATE_LEN);
-
-                    struct tm tmtime;
-                    //pch3 = strptime(pch2, "%b %d %T %Y %Z", &tmtime);
-                    pch3 = strptime(pch3, "%b %d %T %Y %Z", &tmtime);
-                    if (pch3) {
-                        // "YYYY-MM-DD HH:MM:SS"
-                        // strftime(pch2, 23, "\"%Y-%m-%d %X\"\n\0", &tmtime);
-                        strftime(pch3, 23, "\"%Y-%m-%d %X\"\n\0", &tmtime);
-                    }
-
-                    // WRITE(line);
-                    WRITE(pch3);
-                }
-
-                isfirst = !isfirst;
-
-                read++;
-                pch = fgets(buffer, MAX_LINE_LEN, fin);
-            }
-
-            fclose(fin);
-        }
-        // else {
-        //     // WRITE("Cannot read ");
-        //     // WRITELN(in_filename);
-        // }
+        read++;
+        pch = fgets(buffer, MAX_LINE_LEN, fin);
     }
-    // else {
-    //     // WRITE(in_filename);
-    //     // WRITE(" does not exist.\n");
-    // }
 
+    while (!feof(fin) && strstr(buffer, SIGNATURE_ALGORITHM)==NULL)
+    {
+        size_t linelen = strlen(pch);
 
-    /*
-        data = getenv("HTTP_X_WDE");
-        if (data != NULL)
+        if (isfirst)
         {
-            WRITE(data);
+            written++;
+            WRITE(ltoa(written, line, 10));
+            WRITE(",\"");
+            pch[linelen - 1] = '\0';
+            WRITE(pch + SERIAL_NUMBER_LEN);
+            WRITE("\",");
         }
-    */
+        else
+        {
+            char* pch3;
+            pch3 = pch + REVOCATION_DATE_LEN;
+            struct tm tmtime;
+            pch3 = strptime(pch3, "%b %d %T %Y %Z", &tmtime);
+            if (pch3) {
+                strftime(pch3, 23, "\"%Y-%m-%d %X\"\n\0", &tmtime);
+            }
+
+            // WRITE(line);
+            WRITE(pch3);
+        }
+
+        isfirst = !isfirst;
+
+        read++;
+        pch = fgets(buffer, MAX_LINE_LEN, fin);
+    }
+
+    fclose(fin);
 
     return 0;
 }
